@@ -1,4 +1,4 @@
-package cn.luliangwei.interview.questions.orderproblem;
+package cn.luliangwei.interview.questions.initorder;
 /**
  * <pre>
  * static 代码块，只在类初始化的时候执行一次

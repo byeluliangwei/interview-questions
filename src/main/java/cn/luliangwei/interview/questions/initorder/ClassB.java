@@ -1,4 +1,4 @@
-package cn.luliangwei.interview.questions.orderproblem;
+package cn.luliangwei.interview.questions.initorder;
 
 public class ClassB extends ClassA{
     public ClassB() {

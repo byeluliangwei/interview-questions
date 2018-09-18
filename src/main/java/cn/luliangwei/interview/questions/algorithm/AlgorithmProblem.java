@@ -9,6 +9,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1355,18 +1356,31 @@ public class AlgorithmProblem {
     }
     //-----------------------------------------------------------------------------------
     /**
+     * 
      * <pre>
      * 题目：
      *      计算1-N之间的数字中1出现的次数
      * 
-     * 不会
+     * 思路：转换成字符串来计算
+     * 
+     * 1870ms
+     * 31612k
      * </pre>
      */
     public static int countNumberOf1_N(int n) {
-        
-        return 0;
+        String str = "";
+        for(int i = 1 ; i<=n; i++) {
+            str+=i;
+        }
+        int count = 0;
+        for(char ch : str.toCharArray()) {
+            if(ch == '1') {
+                count++;
+            }
+        }
+        return count;
     }
-    
+  //-----------------------------------------------------------------------------------
     /**
      * <pre>
      * 题目：
@@ -1396,30 +1410,249 @@ public class AlgorithmProblem {
         }
         return num;
     }
-    
+  //-----------------------------------------------------------------------------------
     /**
-     * 输出字符串中出现次数最多的字母及其出现的次数
+     * <pre>
+     * 题目：
+     *      把只包含质因子2、3和5的数称作丑数（Ugly Number）。
+     *      例如6、8都是丑数，但14不是，因为它包含质因子7。 
+     *      习惯上我们把1当做是第一个丑数。
+     *      求按从小到大的顺序的第N个丑数。
      * 
+     * 
+     * 此方法复杂度太高了
+     * </pre>
      */
-    public static void printCharAndNumber(String str) {
-        if(str == null || str.equals("")) return;
-        char[] chars = str.toCharArray();
-        Map<Character ,Integer> map = new HashMap<>();
-        for(Character ch : chars) {
-            if(ch > 'a' && ch < 'z' || ch >'A' && ch < 'Z') {
-                Integer count = map.get(ch);
-                map.put(ch, count == null ? 1 : count+1);
+    public static int numberOfUgly(int index) {
+        if(index <= 0) return 0;
+        int count = 1;
+        int num = 1;
+        while(count < index) {
+            if(isUgly(num)) {
+                count++;
+                num++;
             }
         }
-        System.out.println(Collections.max(map.keySet()));
+        
+        return num;
     }
     
+    public static boolean isUgly(int num) {
+        while(num%2 == 0) {
+            num /= 2;
+        }
+        while(num%3 == 0) {
+            num /= 3;
+        }
+        while(num%5 == 0) {
+            num /= 5;
+        }
+        return num == 1;
+    }
     
-    public static void main(String[] args) {
-       int a = 1,b = 32;
-       System.out.println(a<<b);
-       System.out.println(a<<32);
+  //-----------------------------------------------------------------------------------
+    /**
+     * 
+     * <pre>
+     * 题目：
+     *  找到第一个只出现一次的字符,并返回它的位置, 如果没有则返回 -1（需要区分大小写）.
+     * 
+     * 42ms
+     * 10684k
+     * </pre>
+     */
+    public static int firstNotRepeatingChar(String str) {
+        if(str == null || str.equals("")) return -1;
+        String s = str;
+        LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
+        for(char ch : s.toCharArray()) {
+            String key = String.valueOf(ch);
+            if(!map.containsKey(key)) {
+                map.put(key, 1);
+            }else {
+                map.put(key, map.get(key)+1);
+            }
+        }
+        for(Entry<String, Integer> entry : map.entrySet()) {
+            if(entry.getValue() == 1) {
+                return str.indexOf(entry.getKey()) -1;
+            }
+        }
         
+        return -1;
+    }
+    
+    /**
+     * 解法2
+     * <pre>
+     * 巧妙
+     * 27ms
+     * 9560k
+     * </pre>
+     */
+    public static int firstChar(String str) {
+        if(str == null || str.equals("")) return -1;
+        int[] chars = new int[123];
+        char[] array = str.toCharArray();
+        for(char ch : array) {
+            chars[ch]++;
+        }
+        for(int i = 0 ; i < array.length ; i++) {
+            if(chars[array[i]] == 1) {
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+  //-----------------------------------------------------------------------------------
+    /**
+     * <pre>
+     *  题目：
+     *      在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。
+     *      输入一个数组,求出这个数组中的逆序对的总数P。
+     *      
+     *      
+     *      
+     *   超时了，测试通过率50%
+     * </pre>
+     * 
+     */
+    public static int inverseNumPairs(int[] array) {
+        if(array == null || array.length == 0) return 0;
+        int j = array.length-1;
+        int count = 0;
+        for(;j>0 ; j--) {
+            int i = 0;
+            while(i<j) {
+                if(array[i] > array[j]) {
+                    count++;
+                    i++;
+                }else {
+                    i++;
+                }
+            }
+        }
+        return count;
+    }
+    
+  //-----------------------------------------------------------------------------------
+    /**
+     * <pre>
+     * 题目：
+     *      输入两个链表，找出它们的第一个公共结点。
+     *      
+     *      思路：先计算两个链表的长度,分别将长的链表指向和另一个一样长的位置
+     *      然后比较两个链表
+     *   14ms
+     *   9812k
+     * </pre>
+     * 
+     */
+    public static ListNode firstCommonNode(ListNode pHead1, ListNode pHead2) {
+        int lenA = 0;
+        int lenB = 0;
+        ListNode p1 = pHead1;
+        ListNode p2 = pHead2;
+        while (p1 != null) {
+            lenA++;
+            p1 = p1.next;
+        }
+        while (p2 != null) {
+            lenB++;
+            p2 = p2.next;
+        }
+        if (lenA - lenB > 0) {
+            int dis = lenA - lenB;
+            while (dis-- != 0) {
+                pHead1 = pHead1.next;
+            }
+        } else if (lenB - lenA > 0) {
+            int dis = lenB - lenA;
+            while (dis-- != 0) {
+                pHead2 = pHead2.next;
+            }
+        }
+        while (pHead1 != null && pHead2 != null) {
+            if (pHead1.val == pHead2.val) {
+                return new ListNode(pHead1.val);
+            }
+            pHead1 = pHead1.next;
+            pHead2 = pHead2.next;
+        }
+        return null;
+    }
+    
+  //-----------------------------------------------------------------------------------
+    /**
+     * <pre>
+     * 统计一个数字在排序数组中出现的次数。
+     *
+     * 16ms
+     * 9312k
+     * </pre>
+     */
+    public static int findNumOfK(int[] array,int k) {
+        int count = 0;
+        for(int i = 0 ; i< array.length ; i++) {
+            if(array[i] == k) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+  //-----------------------------------------------------------------------------------
+    /**
+     * <pre>
+     * 题目：DFS
+     *      输入一棵二叉树，求该树的深度。
+     *      
+     * 思路：递归求二叉树的深度
+     * 16ms
+     * 9164k
+     * </pre>
+     */
+    public static int treeDepth(TreeNode root) {
+        if(root == null) return 0;
+        int left = treeDepth(root.left);
+        int right = treeDepth(root.right);
+        return (left > right ? left : right )+1;
+    }
+    
+    /**
+     * 解法2：非递归求树的深度
+     * 
+     * 思路：树的深度就是树的层数，层数可以用广度优先遍历，即可以使用队列queue实现广度优先遍历
+     * 
+     * 17ms
+     * 9436k
+     */
+    public static int deepFirstSearch(TreeNode root) {
+        if(root == null) return 0;
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        //树有多少层,层数即为树的深度
+        int level = 0;
+        while(!queue.isEmpty()) {
+            level++;
+          //每层有多少个节点
+            int count = queue.size();
+            while(count-- != 0) {
+                TreeNode temp = queue.poll();
+                if(temp.left != null) queue.offer(temp.left);
+                if(temp.right != null) queue.offer(temp.right);
+            }
+        }
+        
+        return level;
+    }
+    
+    public static void main(String[] args) throws ClassNotFoundException {
+       Class<?> clazz = Class.forName("cn.luliangwei.interview.questions.algorithm.AlgorithmProblem");
+       System.out.println(clazz.getSimpleName());
+       
     }
 
 }
