@@ -1648,11 +1648,66 @@ public class AlgorithmProblem {
         
         return level;
     }
+  //-----------------------------------------------------------------------------------
+    /**
+     * 
+     * <pre>
+     *  题目：
+     *      给定n个数字(1<=n<=7),n个数字分别是周一到周日（1-7）
+     *      将连续三个以上的数字合并在一起,合并的数字以‘-’连接,否则就以空格隔开
+     *      例如：1 2 3 4 6 7 合并之后为1-4 6 7
+     *      
+     * </pre>
+     * 
+     */
+    public static void mergeDays(int n,int[] array) {
+        
+    }
+  //-----------------------------------------------------------------------------------
+    /**
+     * 
+     * 求两个数的最大公约数GCD(great common divisor)
+     * 
+     * 辗转相处
+     */
+    public static int maxCommonDivisor(int a , int b) {
+        int temp;
+        if(b>a) {
+            temp = b;
+            b = a;
+            a = temp;
+            
+        }
+        if(a%b == 0) {
+            return b;
+        }
+        return maxCommonDivisor(b, a%b);
+    }
     
-    public static void main(String[] args) throws ClassNotFoundException {
-       Class<?> clazz = Class.forName("cn.luliangwei.interview.questions.algorithm.AlgorithmProblem");
-       System.out.println(clazz.getSimpleName());
+    public static int GCD(int a,int b) {
+        int temp;
+        if(b>a) {
+            temp = b;
+            b = a;
+            a = temp;
+            
+        }
+        if(a%b == 0) return b;
+        return GCD(b,a-b);
+    }
+    //相减
+    public static int GCD2(int a,int b) {
+        if(a == 0) return b;
+        while(b != 0) {
+            if(a>b) a = a-b;
+            else b = b-a;
+        }
+        return a;
+    }
+    
+    public static void main(String[] args) {
        
+        System.out.println(GCD2(17, 8));
     }
 
 }
