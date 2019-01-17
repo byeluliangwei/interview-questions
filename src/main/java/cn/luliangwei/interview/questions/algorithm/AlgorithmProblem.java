@@ -2,12 +2,14 @@ package cn.luliangwei.interview.questions.algorithm;
 
 import java.math.BigDecimal;
 import java.sql.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -31,6 +33,8 @@ import cn.luliangwei.interview.questions.tree.TreeNode;
  * 
  * 主要包含了一些常见的经典算法问题.
  * </p>
+ * 小知识点：
+ * 1、~n = -n-1
  *
  * @author luliangwei
  * @since 2018年8月18日14:29:16
@@ -1335,6 +1339,9 @@ public class AlgorithmProblem {
      *      再加上下一个数1，结果为-6，也就是比1的本身还小，那么就说明，此时的子数组和，会小于从1开始的子数组
      *      后面类推。
      *      
+     *      
+     *   二刷注：
+     *      其实就逐个相加，保存最大的和，即为最大连续子数组的和
      * </pre>
      */
     public static int findMaxSumOfSubArray(int[] array) {
@@ -1705,9 +1712,261 @@ public class AlgorithmProblem {
         return a;
     }
     
+    //-----------------------------------------------------------------------------------------
+    /**
+     * 判断一颗树是不是平衡二叉树
+     * 
+     * 21ms
+     * 9376k
+     * 
+     * 
+     * 问题：
+     *      这种解法思路没问题，但是会做多余的开销，当发现不平衡的时候，没有及时返回，仍然在继续递归和运算。
+     */
+    public static boolean isBalanceTree(TreeNode root) {
+        if(root == null) return true;
+        //递归求树的深度，然后计算左右子树高度差
+        int dif = Math.abs(treeDepth(root.left) - treeDepth(root.right));
+        if(dif>=2) return false;
+        boolean left = true;
+        if( root.left != null) {
+            left = isBalanceTree(root.left);
+        }
+        boolean right = true;
+        if(root.right != null) {
+            right = isBalanceTree(root.right);
+        }
+        return left&&right;
+    }
+    
+    /**
+     * 解法2：
+     *      剪枝法
+     * 
+     */
+    public static boolean isBalanceTree2(TreeNode root) {
+        return getDepth(root) != -1;
+    }
+    
+    public static int getDepth(TreeNode root) {
+        if(root == null) return 0;
+        int left = getDepth(root.left);
+        if(left == -1) return -1;
+        int right = getDepth(root.right);
+        if(right == -1) return -1;
+        return Math.abs(left-right)>1 ? -1  : 1+Math.max(left, right);
+    }
+    
+    //-----------------------------------------------------------------------------------------------
+    /**
+     * num1,num2分别为长度为1的数组。传出参数将num1[0],num2[0]设置为返回结果
+     * 
+     * 一个整型数组里除了两个数字之外，其他的数字都出现了偶数次。请写程序找出这两个只出现一次的数字
+     * 
+     * 24ms
+     * 9516k
+     * 
+     * 
+     * 知识点：
+     * 1、位运算中异或的性质：两个相同数字异或=0，一个数和0异或还是它本身。
+     */
+    public static void findNumsAppearOnce(int [] array,int num1[] , int num2[]) {
+        
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int i = 0; i<array.length;i++) {
+            if(map.containsKey(array[i])) {
+                map.put(array[i], map.get(array[i])+1);
+            }else {
+                map.put(array[i], 1);
+            }
+        }
+        int count = 0;
+        for(Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            if(entry.getValue() == 1) {
+                count++;
+                if(count == 1) num1[0] = entry.getKey();
+                if(count == 2) {
+                    num2[0] = entry.getKey();
+                    break;
+                } 
+                
+            }
+        }
+    }
+    //-----------------------------------------------------------------------------------------------
+    /**
+     * 输出所有和为S的连续正数序列。序列内按照从小至大的顺序，序列间按照开始数字从小到大的顺序
+     * 
+     * 思路：比如计算sum=9
+     *  
+     *      初始low = 1；high = 1。如果从low到high的数字之和小于sum，那么high++
+     *      如果low到high的数字之和大于sum，那么low++
+     *      如果等于，则找到一组满足条件的序列
+     *      
+     *  1 = 1<9
+     *  1 + 2 =3<9
+     *  1 + 2 + 3 = 6<9
+     *  1 + 2 + 3 + 4 = 12>9
+     *      2 + 3 + 4 = 9=9
+     *          3 + 4 + 5 = 12>9
+     *              4 + 5 = 9=9
+     *              4 + 5 + 6 = 15>9
+     *                  5 + 6 = 11>9
+     *                      6 = 6<9
+     *                      6 + 7 = 13>9
+     *                      ...... 
+     *  26ms
+     *  9556k
+     */
+    public static ArrayList<ArrayList<Integer>> findContinuousSequence(int sum) {
+
+        ArrayList<ArrayList<Integer>> result = new ArrayList<>();
+        int low = 1;
+        int high = 1;
+        while(high < sum) {
+            int count = count(low,high);
+            if(count == sum) {
+                result.add(addList(low, high));
+                high++;
+            }
+            if(count < sum) {
+                high++;
+            }
+            if(count > sum) {
+                low++;
+            }
+        }
+        return result;
+    }
+    //计算low到high之间所有数字之和
+    public static int count(int low,int high) {
+        int count = 0;
+        for(int i = low;i<=high;i++) {
+            count+=i;
+        }
+        return count;
+    }
+    //将满足条件的序列存入list
+    public static ArrayList<Integer> addList(int low,int high){
+        ArrayList<Integer> list = new ArrayList<>();
+        for(int i = low;i<=high;i++) {
+            list.add(i);
+        }
+        return list;
+    }
+  //-----------------------------------------------------------------------------------------------
+    /**
+     * 输入一个递增排序的数组和一个数字S，在数组中查找两个数，使得他们的和正好是S，如果有多对数字的和等于S，输出两个数的乘积最小的。
+     * 
+     * 输出这两个数，小的先输出
+     * 
+     * 特点：
+     *      有序递增
+     *      
+     * 思路：
+     *      维护两个指针，low指向数组0，high指向数组length-1
+     *      比较两数的和，如果小于sum，则low++，如果大于sum，high--
+     *      找到的第一个数，即时满足条件的
+     *      
+     *      由于数组是有序递增的，所以第一个满足条件的则是最小的
+     *      
+     */
+    public static ArrayList<Integer> findNumbersWithSum(int [] array,int sum) {
+        ArrayList<Integer> list = new ArrayList<>();
+        int low = 0;
+            int high = array.length-1;
+            while(low<high) {
+                if(array[low] + array[high] == sum) {
+                    list.add(array[low]);
+                    list.add(array[high]);
+                    return list;
+                }
+                if(array[low] + array[high] <sum) {
+                    low++;
+                }
+                if(array[low] + array[high] > sum) {
+                    high--;
+                }
+            }
+        return list;
+    }
+  //-----------------------------------------------------------------------------------------------
+    /**
+     * 对于一个给定的字符序列S，请你把其循环左移K位后的序列输出。
+     * 
+     * 27ms
+     * 9480k
+     */
+    public static String leftRotateString(String str,int n) {
+        if("".equals(str)) return "";
+        Queue<Character> queue = new ArrayDeque<>();
+        char[] array = str.toCharArray();
+        for(char ch : array) {
+            queue.offer(ch);
+        }
+        while(n != 0) {
+            queue.offer(queue.poll());
+            n--;
+        }
+        String s = "";
+        while(!queue.isEmpty()) {
+            s+=queue.poll().charValue();
+        }
+        return s;
+    }
+    //解法2
+    public static String leftRotateString_2(String str,int n) {
+        if("".equals(str)) return "";
+        int len = str.length();
+        str+=str;
+        return str.substring(n, len+n);
+    }
+    
+  //-----------------------------------------------------------------------------------------------
+    /**
+     * 翻转句子
+     * 
+     * student. a am i翻转为：i am a student.
+     * 24ms
+     * 9736k
+     * 
+     */
+    public static String reverseSentence(String str) {
+        if("".equals(str)) {
+            return "";
+        }
+        if(" ".equals(str)) return str;
+        String[] words = str.split(" ");
+        int low = 0;
+        int high = words.length-1;
+        while(low<=high) {
+            String temp = words[low];
+            words[low] = words[high];
+            words[high] = temp;
+            low++;
+            high--;
+        }
+        String sentence = "";
+        for(String s:words) {
+            sentence += s + " ";
+        }
+        return sentence.trim();
+    }
+    //解法2
+    public static String reverseSentence_1(String str) {
+        if (str.trim().equals("")) {
+            return str;
+        }
+        String[] words = str.split(" ");
+        StringBuilder sb = new StringBuilder();
+        for(int i = words.length-1; i>=0 ;i--) {
+            sb.append(words[i]).append(" ");
+        }
+        return sb.toString().trim();
+    }
+    
     public static void main(String[] args) {
-       
-        System.out.println(GCD2(17, 8));
+        
     }
 
 }
